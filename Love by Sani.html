@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sani Friendship</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,600&family=Cinzel:wght@400&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #000;
+    overflow: hidden;
+    width: 100vw; height: 100vh;
+    font-family: 'Cormorant Garamond', serif;
+    cursor: none;
+  }
+
+  #c { display:block; width:100%; height:100%; }
+
+  /* Custom cursor */
+  #cursor {
+    position: fixed; pointer-events: none; z-index: 9999;
+    width: 12px; height: 12px;
+    background: rgba(255,120,160,0.9);
+    border-radius: 50%;
+    transform: translate(-50%,-50%);
+    transition: transform 0.1s ease;
+    box-shadow: 0 0 15px rgba(255,80,120,0.8), 0 0 40px rgba(255,80,120,0.3);
+  }
+
+  /* UI overlay */
+  #ui {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: space-between;
+    padding: 3.5vh 0 4vh;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .top-text {
+    text-align: center;
+    animation: floatIn 2s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  .top-text .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.55rem, 1.5vw, 0.72rem);
+    letter-spacing: 0.5em;
+    color: rgba(255,160,190,0.6);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+
+  .top-text h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    color: #fff;
+    line-height: 1;
+    text-shadow:
+      0 0 40px rgba(255,100,150,0.7),
+      0 0 80px rgba(255,60,120,0.3);
+    letter-spacing: 0.02em;
+  }
+
+  .bottom-section {
+    text-align: center;
+    animation: floatIn 2s cubic-bezier(.16,1,.3,1) 0.4s both;
+  }
+
+  .message {
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    color: rgba(255,210,225,0.75);
+    letter-spacing: 0.08em;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 30px rgba(255,100,150,0.4);
+  }
+
+  .controls {
+    pointer-events: all;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 1rem;
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,120,160,0.3);
+    color: rgba(255,200,220,0.8);
+    padding: 0.55rem 1.6rem;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.55rem, 1.3vw, 0.65rem);
+    letter-spacing: 0.25em;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+  }
+  .btn:hover {
+    background: rgba(255,100,150,0.15);
+    border-color: rgba(255,120,160,0.8);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255,80,140,0.3);
+    transform: translateY(-2px);
+  }
+
+  /* hint */
+  .hint {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    color: rgba(255,150,180,0.35);
+    pointer-events: none;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes floatIn {
+    from { opacity:0; transform: translateY(30px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity:0.35; }
+    50%      { opacity:0.7; }
+  }
+
+  /* Vignette */
+  #vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    background: radial-gradient(ellipse at center,
+      transparent 40%,
+      rgba(0,0,0,0.55) 100%);
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+<div id="cursor"></div>
+
+<div id="ui">
+  <div class="top-text">
+    <span class="eyebrow">✦ &nbsp; a gift for you &nbsp; ✦</span>
+    <h1>My Heart is Yours</h1>
+  </div>
+
+  <div class="bottom-section">
+    <p class="message">"Every beat, every moment — for you alone."</p>
+    <p class="message">Sani</p>
+    <div class="controls">
+      <button class="btn" id="btnSpin">❤ Spin</button>
+      <button class="btn" id="btnExplode">✦ Burst</button>
+      <button class="btn" id="btnColor">◈ Colors</button>
+      <button class="btn" id="btnPulse">♡ Pulse</button>
+    </div>
+  </div>
+</div>
+
+<p class="hint">drag to rotate &nbsp;·&nbsp; scroll to zoom</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── Setup ───────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 0, 5.5);
+
+// ─── Heart parametric math ───────────────────────────────────────────────────
+function heart1(t) { return 16 * Math.pow(Math.sin(t), 3); }
+function heart2(t) {
+  return 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+}
+
+// ─── Build heart geometry (3D shell) ─────────────────────────────────────────
+function buildHeartGeometry(scale = 0.18) {
+  const positions = [];
+  const colors    = [];
+  const uSlices = 200;
+  const vSlices = 80;
+
+  // Parametric heart surface: sweep the 2D heart curve around and add depth
+  for (let ui = 0; ui <= uSlices; ui++) {
+    const t = (ui / uSlices) * Math.PI * 2;
+    const hx = heart1(t) * scale;
+    const hy = heart2(t) * scale;
+    // Normal direction for surface expansion
+    const dt = 0.001;
+    const hx2 = heart1(t + dt) * scale;
+    const hy2 = heart2(t + dt) * scale;
+    const nx = -(hy2 - hy);
+    const ny = (hx2 - hx);
+    const len = Math.sqrt(nx*nx + ny*ny) || 1;
+
+    for (let vi = 0; vi <= vSlices; vi++) {
+      const d = (vi / vSlices) * 0.45;  // thickness
+      const px = hx + (nx/len) * d * scale * 2;
+      const py = hy + (ny/len) * d * scale * 2;
+      // z: give it 3d depth, bulge outward
+      const bulge = Math.sin(vi / vSlices * Math.PI);
+      const pz = bulge * 0.55;
+
+      positions.push(px, py, pz);
+
+      // Color gradient: deep crimson → hot pink → gold shimmer
+      const uFrac = ui / uSlices;
+      const vFrac = vi / vSlices;
+      const r = 0.85 + 0.15 * Math.sin(uFrac * Math.PI * 4);
+      const g = 0.05 + 0.15 * vFrac + 0.1 * bulge;
+      const b = 0.15 + 0.2 * bulge + 0.1 * vFrac;
+      colors.push(r, g, b);
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('color',    new THREE.Float32BufferAttribute(colors, 3));
+  return geo;
+}
+
+// ─── Heart outline (the original turtle-style lines) ─────────────────────────
+function buildHeartLines(scale = 0.18, layers = 5) {
+  const group = new THREE.Group();
+
+  for (let l = 0; l < layers; l++) {
+    const zDepth = (l / (layers - 1)) * 1.1 - 0.55;
+    const scaleMod = 1 - Math.abs(zDepth) * 0.3;
+    const pts = [];
+
+    for (let i = 0; i <= 380; i++) {
+      const t = (i / 380) * Math.PI * 2;
+      pts.push(new THREE.Vector3(
+        heart1(t) * scale * scaleMod,
+        heart2(t) * scale * scaleMod,
+        zDepth
+      ));
+    }
+
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+
+    // color per layer: crimson core, pink outer
+    const frac = l / (layers - 1);
+    const col = new THREE.Color().setHSL(0.93 - frac * 0.06, 1.0, 0.45 + frac * 0.2);
+    const mat = new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.7 - frac * 0.2 });
+    group.add(new THREE.Line(geo, mat));
+
+    // radial spokes (the original turtle goto(0,0) effect)
+    const spokePts = [];
+    const spokeCount = 90;
+    for (let s = 0; s < spokeCount; s++) {
+      const t = (s / spokeCount) * Math.PI * 2;
+      spokePts.push(new THREE.Vector3(0, 0, zDepth));
+      spokePts.push(new THREE.Vector3(
+        heart1(t) * scale * scaleMod,
+        heart2(t) * scale * scaleMod,
+        zDepth
+      ));
+    }
+    const sgeo = new THREE.BufferGeometry().setFromPoints(spokePts);
+    const smat = new THREE.LineBasicMaterial({
+      color: col,
+      transparent: true,
+      opacity: (0.35 - frac * 0.1) * (l === 0 ? 1.5 : 1)
+    });
+    group.add(new THREE.LineSegments(sgeo, smat));
+  }
+  return group;
+}
+
+// ─── Floating particles ───────────────────────────────────────────────────────
+function buildParticles(count = 1200) {
+  const positions = new Float32Array(count * 3);
+  const colors    = new Float32Array(count * 3);
+  const sizes     = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    // Random position in sphere
+    const theta = Math.random() * Math.PI * 2;
+    const phi   = Math.acos(2 * Math.random() - 1);
+    const r     = 3 + Math.random() * 4;
+    positions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i*3+2] = r * Math.cos(phi);
+
+    const hue = 0.9 + Math.random() * 0.08;
+    const c = new THREE.Color().setHSL(hue, 1.0, 0.7);
+    colors[i*3]   = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+    sizes[i] = Math.random() * 3 + 1;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('color',    new THREE.Float32BufferAttribute(colors, 3));
+  geo.setAttribute('size',     new THREE.Float32BufferAttribute(sizes, 1));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.04,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.7,
+    sizeAttenuation: true,
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// ─── Glow sprite ─────────────────────────────────────────────────────────────
+function makeGlowSprite() {
+  const size = 256;
+  const cvs = document.createElement('canvas');
+  cvs.width = cvs.height = size;
+  const ctx = cvs.getContext('2d');
+  const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0,   'rgba(255,120,160,0.6)');
+  g.addColorStop(0.3, 'rgba(255,60,120,0.2)');
+  g.addColorStop(1,   'rgba(255,0,80,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,size,size);
+  const tex = new THREE.CanvasTexture(cvs);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(6, 6, 1);
+  return sprite;
+}
+
+// ─── Scene assembly ──────────────────────────────────────────────────────────
+const heartGroup = new THREE.Group();
+const linesGroup = buildHeartLines();
+const particles  = buildParticles();
+const glow       = makeGlowSprite();
+glow.position.set(0, 0.2, -1);
+
+// Point cloud surface
+const surfGeo = buildHeartGeometry();
+const surfMat = new THREE.PointsMaterial({
+  size: 0.025, vertexColors: true,
+  transparent: true, opacity: 0.9,
+  sizeAttenuation: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+const surface = new THREE.Points(surfGeo, surfMat);
+
+heartGroup.add(linesGroup);
+heartGroup.add(surface);
+heartGroup.rotation.x = 0.15;
+
+scene.add(glow);
+scene.add(heartGroup);
+scene.add(particles);
+
+// Slight upward offset
+heartGroup.position.y = 0.1;
+
+// ─── Color palettes ───────────────────────────────────────────────────────────
+const palettes = [
+  // Red/pink (default)
+  { hueStart: 0.93, hueRange: 0.06, bgColor: '#000' },
+  // Blue/cyan
+  { hueStart: 0.55, hueRange: 0.08, bgColor: '#000510' },
+  // Gold/amber
+  { hueStart: 0.07, hueRange: 0.06, bgColor: '#050200' },
+  // Emerald
+  { hueStart: 0.35, hueRange: 0.06, bgColor: '#000a02' },
+];
+let palIdx = 0;
+
+function applyPalette(idx) {
+  const pal = palettes[idx];
+  document.body.style.background = pal.bgColor;
+
+  // Recolor line layers
+  linesGroup.children.forEach((child, i) => {
+    const frac = (i % 2 === 0) ? (Math.floor(i/2)) / 4 : (Math.floor(i/2)) / 4;
+    const hue = pal.hueStart - frac * pal.hueRange;
+    child.material.color.setHSL(hue, 1.0, 0.5 + frac * 0.2);
+  });
+
+  // Recolor surface
+  const colAttr = surfGeo.getAttribute('color');
+  const count = colAttr.count;
+  for (let i = 0; i < count; i++) {
+    const vf = (i % 81) / 80;
+    const c = new THREE.Color().setHSL(pal.hueStart - vf * pal.hueRange * 0.5, 1.0, 0.4 + vf * 0.3);
+    colAttr.setXYZ(i, c.r, c.g, c.b);
+  }
+  colAttr.needsUpdate = true;
+
+  // Recolor particles
+  const pCol = particles.geometry.getAttribute('color');
+  for (let i = 0; i < pCol.count; i++) {
+    const c = new THREE.Color().setHSL(pal.hueStart + (Math.random()-0.5)*pal.hueRange, 1.0, 0.7);
+    pCol.setXYZ(i, c.r, c.g, c.b);
+  }
+  pCol.needsUpdate = true;
+}
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let autoSpin   = true;
+let pulseMode  = false;
+let exploding  = false;
+let explodeT   = 0;
+const origPositions = surfGeo.getAttribute('position').array.slice();
+
+// ─── Burst / explode ─────────────────────────────────────────────────────────
+function triggerExplode() {
+  if (exploding) return;
+  exploding = true; explodeT = 0;
+}
+
+// ─── Mouse drag ───────────────────────────────────────────────────────────────
+let isDragging = false, prevMX = 0, prevMY = 0;
+let velX = 0, velY = 0;
+
+canvas.addEventListener('mousedown', e => { isDragging = true; prevMX = e.clientX; prevMY = e.clientY; autoSpin = false; });
+window.addEventListener('mouseup',   () => { isDragging = false; });
+window.addEventListener('mousemove', e => {
+  // cursor
+  document.getElementById('cursor').style.left = e.clientX + 'px';
+  document.getElementById('cursor').style.top  = e.clientY + 'px';
+  if (!isDragging) return;
+  const dx = e.clientX - prevMX;
+  const dy = e.clientY - prevMY;
+  velX = dy * 0.008;
+  velY = dx * 0.008;
+  heartGroup.rotation.x += velX;
+  heartGroup.rotation.y += velY;
+  prevMX = e.clientX; prevMY = e.clientY;
+});
+
+// Touch drag
+canvas.addEventListener('touchstart', e => { isDragging = true; prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY; autoSpin = false; });
+window.addEventListener('touchend',   () => { isDragging = false; });
+window.addEventListener('touchmove',  e => {
+  if (!isDragging) return;
+  const dx = e.touches[0].clientX - prevMX;
+  const dy = e.touches[0].clientY - prevMY;
+  velX = dy * 0.008;
+  velY = dx * 0.008;
+  heartGroup.rotation.x += velX;
+  heartGroup.rotation.y += velY;
+  prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY;
+});
+
+// Scroll to zoom
+window.addEventListener('wheel', e => {
+  camera.position.z = Math.max(2.5, Math.min(10, camera.position.z + e.deltaY * 0.01));
+});
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+document.getElementById('btnSpin').addEventListener('click', () => {
+  autoSpin = !autoSpin;
+  velX = 0; velY = 0;
+});
+document.getElementById('btnExplode').addEventListener('click', triggerExplode);
+document.getElementById('btnColor').addEventListener('click', () => {
+  palIdx = (palIdx + 1) % palettes.length;
+  applyPalette(palIdx);
+});
+document.getElementById('btnPulse').addEventListener('click', () => {
+  pulseMode = !pulseMode;
+});
+
+// ─── Animate ─────────────────────────────────────────────────────────────────
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.016;
+
+  // Auto spin
+  if (autoSpin) {
+    heartGroup.rotation.y += 0.008;
+    heartGroup.rotation.x = 0.15 + Math.sin(t * 0.3) * 0.05;
+  } else if (!isDragging) {
+    // Inertia
+    velX *= 0.95; velY *= 0.95;
+    heartGroup.rotation.x += velX;
+    heartGroup.rotation.y += velY;
+  }
+
+  // Pulse
+  const pulseScale = pulseMode
+    ? 1 + 0.08 * Math.sin(t * 3.5)
+    : 1 + 0.015 * Math.sin(t * 1.2);
+  heartGroup.scale.setScalar(pulseScale);
+
+  // Glow breathe
+  glow.material.opacity = 0.35 + 0.2 * Math.sin(t * 1.5);
+  glow.scale.setScalar(6 + 1.5 * Math.sin(t * 1.5));
+
+  // Particles orbit
+  particles.rotation.y += 0.001;
+  particles.rotation.x += 0.0003;
+
+  // Explode effect
+  if (exploding) {
+    explodeT += 0.04;
+    const posAttr = surfGeo.getAttribute('position');
+    const count = posAttr.count;
+    for (let i = 0; i < count; i++) {
+      const ox = origPositions[i*3];
+      const oy = origPositions[i*3+1];
+      const oz = origPositions[i*3+2];
+      const len = Math.sqrt(ox*ox + oy*oy + oz*oz) || 1;
+      const burst = Math.sin(explodeT * Math.PI) * 1.8;
+      posAttr.setXYZ(i,
+        ox + (ox/len) * burst,
+        oy + (oy/len) * burst,
+        oz + (oz/len) * burst
+      );
+    }
+    posAttr.needsUpdate = true;
+    if (explodeT >= 1) {
+      exploding = false;
+      for (let i = 0; i < posAttr.count; i++) {
+        posAttr.setXYZ(i, origPositions[i*3], origPositions[i*3+1], origPositions[i*3+2]);
+      }
+      posAttr.needsUpdate = true;
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// ─── Resize ───────────────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
